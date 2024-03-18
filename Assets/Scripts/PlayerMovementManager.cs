@@ -19,6 +19,7 @@ public class PlayerMovementManager : MonoBehaviour
     public AudioSource feet; //source where the stepping and jumping sounds play
 
     [HideInInspector] public float switchTreshold; //how slow the player must move to switch back to the walking script
+    [HideInInspector] public float speed; //visual effect speed
     [HideInInspector] public MovementState movementState = MovementState.Walking; //what is the movement state at any given time
     [HideInInspector] public bool isGrounded = false;
     [HideInInspector] public bool isJumping = false;
@@ -97,11 +98,11 @@ public class PlayerMovementManager : MonoBehaviour
             isJumping = false;
 
         //using the sqrMagnitude of the player velocity to calculate the speed for the visual and audio effects saves a square root call
-        float speed = Mathf.Clamp(playerBody.velocity.sqrMagnitude / (physicsMovement.startingSprintSpeed * physicsMovement.startingSprintSpeed), .5f, 3);
+        speed = Mathf.Clamp(playerBody.velocity.sqrMagnitude / (physicsMovement.startingSprintSpeed * physicsMovement.startingSprintSpeed), .5f, 3);
         handsAnimator.SetBool("Grounded", isGrounded);
         handsAnimator.SetFloat("Speed", speed);
         speedParticle.startSpeed = speed * 5;
-        AudioManager.filter.cutoffFrequency = levelManager.isPaused ? 1500 : speed * 3000;
+        AudioManager.filter.cutoffFrequency = levelManager.isPaused ? 1500 : speed * 4000;
     }
 
     public void SwitchStates(MovementState state)

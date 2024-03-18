@@ -353,7 +353,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outlineMaterial: {fileID: 2100000, guid: 5e702a8bf7ce07d4abbe34fed0b16f3b, type: 2}
   thickness: 0.02
-  beatThreshold: 0.1
+  beatThreshold: 0.4
   timeBetweenBeats: 0.15
-  timeToBeat: 0.05
+  timeToBeat: 0.1
   beatSpeed: 15

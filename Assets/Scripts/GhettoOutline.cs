@@ -13,6 +13,7 @@ public class GhettoOutline : MonoBehaviour
     public float timeToBeat = .05f; //how long before the outline reaches the apex
     public float beatSpeed = 3; //how fast the outline moves
 
+    PlayerMovementManager inputManager;
     GameObject outlineObj;
     float[] spectrumData = new float[128];
     float lastSample;
@@ -21,6 +22,7 @@ public class GhettoOutline : MonoBehaviour
     private void Start()
     {
         //we duplicate the current object, parent it to this one and remove the components we don't need, leaving only the mesh renderer
+        inputManager = FindObjectOfType<PlayerMovementManager>();
         outlineObj = Instantiate(gameObject, transform);
         try
         {
@@ -46,7 +48,7 @@ public class GhettoOutline : MonoBehaviour
         beatTimer += Time.deltaTime;
         AudioManager.source.GetSpectrumData(spectrumData, 0, FFTWindow.Hamming);
 
-        if (Mathf.Abs(spectrumData[0] - lastSample) > beatThreshold && beatTimer > timeBetweenBeats)
+        if (Mathf.Abs(spectrumData[0] - lastSample) > (beatThreshold * AudioManager.source.volume) && beatTimer > timeBetweenBeats)
         {
             StopAllCoroutines();
             StartCoroutine(Beat(true));
@@ -61,7 +63,7 @@ public class GhettoOutline : MonoBehaviour
     {
         //when moving with the beat we interpolate between the current object scale and the target
         float scale = outlineObj.transform.localScale.x;
-        float target = up ? 1 + (thickness * 5) : 1 + thickness;
+        float target = up ? 1.015f + (thickness * inputManager.speed * 2) : 1 + thickness;
         float timer = 0;
 
         while (timer < timeToBeat)
