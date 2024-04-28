@@ -7,11 +7,13 @@ public class PlayerMovementManager : MonoBehaviour
 {
     public enum MovementState { Walking, Running } //walking signals we are using kinematic movement, running signals momentum based movement
 
+    public static PlayerMovementManager instance;
     public Rigidbody playerBody;
     public KinematicPlayerMovement kinematicMovement;
     public PhysicsPlayerMovement physicsMovement;
     public ParticleSystem speedParticle; //a particle system that plays while running to better sell the speed to the player
     public float coyoteTime = .15f; //after walking off an edge the player can still jump for a little while, which forgives little reflex mistakes that the player might not even notice
+    public CameraMovement playerCamera;
 
     public Transform groundCheck; //the point where the ground detection occurs
     public LayerMask whatIsGround; //what is considered ground
@@ -31,14 +33,16 @@ public class PlayerMovementManager : MonoBehaviour
     LevelManager levelManager;
     Image doubleJumpIndicator;
     bool checkForGround = true;
-    private void Start()
+    private void Awake()
     {
-        //to make seamless transitions between scenes the player keeps velocity and starts at a different height depending on it to accomodate for the level intro animation
-        playerBody.transform.position = new Vector3(0, Mathf.Max(TransitionInfo.instance.velocity.magnitude, 50), 0); 
+        instance = this;
         switchTreshold = physicsMovement.startingSprintSpeed - 1;
         characterController = GetComponentInChildren<CharacterController>();
         levelManager = FindObjectOfType<LevelManager>();
         doubleJumpIndicator = levelManager.doubleJumpIndicator;
+    }
+    private void Start()
+    {
         SwitchStates(TransitionInfo.instance.movementState);
     }
 

@@ -50,33 +50,42 @@ public class Grapple : MonoBehaviour
         {
             cursor.color = active;
             if (Input.GetMouseButtonDown(0) && !recalling)
-                throwRoutine = StartCoroutine(DrawSineWave(hit.point, true));
+            {
+                grapplePoint.position = hit.point;
+                grapplePoint.parent = hit.collider.transform;
+                throwRoutine = StartCoroutine(DrawSineWave(true));
+            }
         }
         else
         {
             cursor.color = inactive;
         }
 
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0) || StageDirector.instance.levelChanged)
         {
+            StageDirector.instance.levelChanged = false;
             try { StopCoroutine(throwRoutine); } catch { }
 
+            grapplePoint.parent = null;
             recalling = true;
-            StartCoroutine(DrawSineWave(grappleHand.position, false));
+            StartCoroutine(DrawSineWave(false));
         }
     }
     //moving the line after the player has moved so the visual doesn't lag behind
     private void LateUpdate()
     {
         lineRenderer.SetPosition(0, grappleHand.position);
+        lineRenderer.SetPosition(lineRenderer.positionCount - 1, katana.position - katana.forward * .75f);
     }
 
     //this is the pazzaz function, to wiggle the grapple rope and make swinging more funky
     //endPosition is where the katana should end up after being thrown and the bool throwing is to use the same function for the recall
-    IEnumerator DrawSineWave(Vector3 endPosition, bool throwing)
+    IEnumerator DrawSineWave(bool throwing)
     {
+        Vector3 endPosition = throwing ? grapplePoint.position : grappleHand.position;
         float localAmplitude = amplitude;
         bool transitionFinished = false;
+        grapplePoint.position = endPosition;
 
         if (throwing)
         {
@@ -93,7 +102,6 @@ public class Grapple : MonoBehaviour
         }
 
         lineRenderer.positionCount = points;
-        float localKatanaSpeed = Mathf.Clamp(katanaSpeed * Vector3.Distance(katana.position, endPosition) / grappleDistance, .5f, katanaSpeed);
         AudioManager.instance.PlaySound("rope", source);
 
         while (localAmplitude > .05f)
@@ -111,13 +119,22 @@ public class Grapple : MonoBehaviour
             }
 
             //if the katana is recalled the end position is constantly updated because the player is moving
-            if (!throwing)
+            if (StageDirector.instance.levelChanged)
+            {
                 endPosition = grappleHand.position;
+                katana.position = endPosition;
+                localAmplitude = 0;
+                transitionFinished = true;
+                throwing = false;
+                grapplePoint.gameObject.SetActive(false);
+            }
+            else
+            {
+                endPosition = throwing ? grapplePoint.position : grappleHand.position;
+                katana.position = Vector3.MoveTowards(katana.position, endPosition, katanaSpeed);
+            }
 
-            katana.position = grapplePoint.position = Vector3.MoveTowards(katana.position, endPosition, localKatanaSpeed);
             lineRenderer.SetPosition(lineRenderer.positionCount - 1, katana.position - katana.forward * .75f);
-
-            //to wiggle the grapple rope we use a sinus function to offset the points of the line renderer
 
             //first we calculate the direction and distance between each point in the rope
             float distance = Vector3.Distance(grappleHand.position, katana.position);
@@ -157,6 +174,8 @@ public class Grapple : MonoBehaviour
         }
         AudioManager.instance.PlaySound("katana", source);
         lineRenderer.positionCount = 2;
-        lineRenderer.SetPosition(lineRenderer.positionCount - 1, katana.position - katana.forward * .75f);
+
+        if (throwing)
+            katana.parent = grapplePoint;
     }
 }

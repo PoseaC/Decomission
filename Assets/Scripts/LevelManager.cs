@@ -27,8 +27,8 @@ public class LevelManager : MonoBehaviour
     [HideInInspector] public bool stopTimer = false;
     [HideInInspector] public bool isPaused = false;
 
-    float minutes;
-    float seconds;
+    [HideInInspector] public float minutes;
+    [HideInInspector] public float seconds;
     CameraMovement playerCamera;
     private void Awake()
     {
@@ -101,8 +101,6 @@ public class LevelManager : MonoBehaviour
     public IEnumerator LoadSceneAsync(int buildIndex)
     {
         //start loading the next scene in the background while playing the outro animation for the current stage
-        StartCoroutine(FindObjectOfType<StageDirector>().SetStage());
-
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(buildIndex);
         asyncLoad.allowSceneActivation = false;
         alreadyLoading = true;
@@ -115,9 +113,9 @@ public class LevelManager : MonoBehaviour
                 //when the next scene is loaded we save all the info we need about the player to load it in the next scene giving the impression of a smooth transition
                 TransitionInfo.instance.cameraRotationX = playerCamera.xRotation;
                 TransitionInfo.instance.cameraRotationY = playerCamera.yRotation;
-                TransitionInfo.instance.movementState = FindObjectOfType<PlayerMovementManager>().movementState;
+                TransitionInfo.instance.movementState = PlayerMovementManager.instance.movementState;
 
-                Vector3 velocity = FindObjectOfType<PhysicsPlayerMovement>().playerBody.velocity;
+                Vector3 velocity = PlayerMovementManager.instance.playerBody.velocity;
                 TransitionInfo.instance.velocity = new Vector3(0, velocity.y, velocity.z);
 
                 //when the stage director finished the outro of the previous scene we can load the next one

@@ -2,6 +2,7 @@
 using TMPro;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 //using one audio manager that stores all the sounds and can be called to play one at any point makes it easier to add and play new sounds rather than setting up manually an audio clip on each object
 public class AudioManager : MonoBehaviour
 {
@@ -9,6 +10,9 @@ public class AudioManager : MonoBehaviour
     public Sounds[] music; //an array of music to play
     public bool onShuffle = false;
     public bool playerPlaylist = false;
+    public Animator uiAnimator;
+    public Transform player;
+    public TextMeshProUGUI musicTitle;
 
     public static AudioLowPassFilter filter;
     public static AudioSource source;
@@ -16,9 +20,10 @@ public class AudioManager : MonoBehaviour
 
     int songIndex = 0;
     LevelManager levelManager;
-    public Animator uiAnimator;
-    public Transform player;
-    public TextMeshProUGUI musicTitle;
+    float[] spectrumData = new float[128];
+    float lastSample;
+    List<BeatListener> listeners;
+
     private void Awake()
     {
         if (player == null)
@@ -41,7 +46,9 @@ public class AudioManager : MonoBehaviour
         ChangeSFXVolume();
         StartCoroutine(PlayMusic());
         onShuffle = PlayerPrefs.GetInt("OnShuffle", 0) == 1;
+        listeners = new List<BeatListener>();
     }
+
     private void Update()
     {
         if (player == null)
@@ -51,7 +58,27 @@ public class AudioManager : MonoBehaviour
             levelManager = FindObjectOfType<LevelManager>();
 
         transform.position = player.position;
+
+        NotifyListeners();
     }
+
+    private void NotifyListeners()
+    {
+        source.GetSpectrumData(spectrumData, 0, FFTWindow.Hamming);
+        float beatIntensity = Mathf.Abs(spectrumData[0] - lastSample) / source.volume;
+        lastSample = spectrumData[0];
+
+        foreach(BeatListener listener in listeners)
+        {
+            listener.HandleBeat(beatIntensity);
+        }
+    }
+
+    public void AddListener(BeatListener item)
+    {
+        listeners.Add(item);
+    }
+
     public void ChangeMusicVolume()
     {
         foreach (Sounds sound in music)
@@ -68,6 +95,7 @@ public class AudioManager : MonoBehaviour
             sound.volume = PlayerPrefs.GetFloat("SfxVolume", .3f);
         }
     }
+
     public void PlaySound(string name, AudioSource source)
     {
         Sounds sound = Array.Find(sounds, sounds => sounds.soundName == name); //search the list of sounds for the one we need
@@ -84,6 +112,7 @@ public class AudioManager : MonoBehaviour
         source.loop = sound.loop;
         source.Play();
     }
+
     public void PlaySong(Sounds song)
     {
         if (musicTitle == null)
@@ -96,6 +125,7 @@ public class AudioManager : MonoBehaviour
         source.loop = song.loop;
         source.Play();
     }
+
     IEnumerator PlayMusic()
     {
         Sounds song = onShuffle ? music[UnityEngine.Random.Range(0, music.Length)] : music[songIndex];
