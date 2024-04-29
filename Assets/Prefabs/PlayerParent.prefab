@@ -5567,8 +5567,7 @@ MonoBehaviour:
   player: {fileID: 7309876405228390820}
   head: {fileID: 7309876405094195406}
   overlay: {fileID: 7309876404286352892}
-  horizontalSensitivity: 100
-  verticalSensitivity: 100
+  sensitivity: 100
   maxAngle: 90
   yRotation: 0
   xRotation: 0
@@ -5583,6 +5582,9 @@ GameObject:
   m_Component:
   - component: {fileID: 7309876404962061802}
   - component: {fileID: 7309876404962061805}
+  - component: {fileID: 8719488486728296392}
+  - component: {fileID: -3441091451762619689}
+  - component: {fileID: -281080618159582826}
   m_Layer: 0
   m_Name: PlayerParent
   m_TagString: Untagged
@@ -5633,12 +5635,73 @@ MonoBehaviour:
   handsAnimator: {fileID: 7309876403512106039}
   feet: {fileID: 3364437648684469072}
   switchTreshold: 0
+  speed: 0
   movementState: 0
   isGrounded: 1
   isJumping: 0
   hasDoubleJump: 1
   isWallrunning: 0
   movementDirection: {x: 0, y: 0, z: 0}
+--- !u!114 &8719488486728296392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7309876404962061803}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d1c4e0b1822b495aa52bc52839ecb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_BrainParameters:
+    VectorObservationSize: 1
+    NumStackedVectorObservations: 1
+    m_ActionSpec:
+      m_NumContinuousActions: 0
+      BranchSizes: 05000000
+    VectorActionSize: 05000000
+    VectorActionDescriptions: []
+    VectorActionSpaceType: 0
+    hasUpgradedBrainParametersWithActionSpec: 1
+  m_Model: {fileID: 0}
+  m_InferenceDevice: 0
+  m_BehaviorType: 0
+  m_BehaviorName: DoParkour
+  TeamId: 0
+  m_UseChildSensors: 1
+  m_UseChildActuators: 1
+  m_ObservableAttributeHandling: 0
+--- !u!114 &-3441091451762619689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7309876404962061803}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ef626045583c049822d323f7263253, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentParameters:
+    maxStep: 0
+  hasUpgradedFromAgentParameters: 1
+  MaxStep: 0
+--- !u!114 &-281080618159582826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7309876404962061803}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DecisionPeriod: 5
+  TakeActionsBetweenDecisions: 1
 --- !u!1 &7309876405094195407
 GameObject:
   m_ObjectHideFlags: 0
