@@ -14,6 +14,7 @@ public class PlayerMovementManager : MonoBehaviour
     public ParticleSystem speedParticle; //a particle system that plays while running to better sell the speed to the player
     public float coyoteTime = .15f; //after walking off an edge the player can still jump for a little while, which forgives little reflex mistakes that the player might not even notice
     public CameraMovement playerCamera;
+    public bool isAgent = true;
 
     public Transform groundCheck; //the point where the ground detection occurs
     public LayerMask whatIsGround; //what is considered ground
@@ -54,7 +55,14 @@ public class PlayerMovementManager : MonoBehaviour
 
     void GetInput()
     {
-        movementDirection = (Input.GetAxis("Horizontal") * playerBody.transform.right + Input.GetAxis("Vertical") * playerBody.transform.forward).normalized;
+        if (isAgent)
+        {
+            movementDirection = AgentIO.output.Movement;
+        }
+        else
+        {
+            movementDirection = (Input.GetAxis("Horizontal") * playerBody.transform.right + Input.GetAxis("Vertical") * playerBody.transform.forward).normalized;
+        }
 
         if (Physics.CheckSphere(groundCheck.position, .2f, whatIsGround) && checkForGround)
         {
@@ -70,7 +78,7 @@ public class PlayerMovementManager : MonoBehaviour
 
         if (isGrounded)
         {
-            if (Input.GetButtonDown("Running") && movementState.Equals(MovementState.Walking))
+            if ((Input.GetButtonDown("Running") || (isAgent && AgentIO.output.Sprint)) && movementState.Equals(MovementState.Walking))
             {
                 SwitchStates(MovementState.Running);
             }
@@ -82,7 +90,7 @@ public class PlayerMovementManager : MonoBehaviour
     }
     private void LateUpdate()
     {
-        if (Input.GetButtonDown("Jump") && (isGrounded || isWallrunning || hasDoubleJump))
+        if ((Input.GetButtonDown("Jump") || (isAgent && AgentIO.output.Jump)) && (isGrounded || isWallrunning || hasDoubleJump))
         {
             if (!isGrounded && !isWallrunning)
             {
@@ -107,6 +115,10 @@ public class PlayerMovementManager : MonoBehaviour
         handsAnimator.SetFloat("Speed", speed);
         speedParticle.startSpeed = speed * 5;
         AudioManager.filter.cutoffFrequency = levelManager.isPaused ? 1500 : speed * 4000;
+
+        AgentIO.input.AgentPosition = playerBody.transform.position;
+        AgentIO.input.CanJump = hasDoubleJump || isGrounded;
+        AgentIO.input.Grounded = isGrounded;
     }
 
     public void SwitchStates(MovementState state)

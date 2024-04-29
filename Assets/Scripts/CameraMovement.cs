@@ -5,6 +5,7 @@ public class CameraMovement : MonoBehaviour
     public Rigidbody player; //player, used for horizontal movement of the camera
     public Transform head; //player's head position, this will be where the camera will stay relative to the player
     public Camera overlay;
+    public bool isAgent = true;
 
     //mouse sensitivity
     public float sensitivity = 100f;
@@ -32,8 +33,18 @@ public class CameraMovement : MonoBehaviour
     void Update()
     {
         //get the mouse input from the player
-        xMouse = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
-        yMouse = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
+        xMouse = 0;
+        yMouse = 0;
+        if (isAgent)
+        {
+            xMouse = AgentIO.output.CameraOrientation.x * sensitivity * Time.deltaTime;
+            yMouse = AgentIO.output.CameraOrientation.y * sensitivity * Time.deltaTime;
+        }
+        else
+        {
+            xMouse = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
+            yMouse = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
+        }
 
         //rotate the head for up and down movement
         yRotation -= yMouse;
@@ -46,5 +57,6 @@ public class CameraMovement : MonoBehaviour
 
         //camera follows the head's position and rotation
         transform.SetPositionAndRotation(head.position, head.rotation); 
+        AgentIO.input.CameraRotation = Quaternion.Euler(head.localEulerAngles.x, player.transform.rotation.eulerAngles.y, 0);
     }
 }

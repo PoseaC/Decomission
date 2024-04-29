@@ -16,6 +16,7 @@ public class Grapple : MonoBehaviour
     public PlayerMovementManager inputManager;
     public LayerMask whatIsGrappable; //what can be grappled
     public float grappleDistance = 50; //how far away can the grapple go
+    public bool isAgent = true;
 
     [Header("Points of Reference")]
     public Transform mainCamera;
@@ -49,7 +50,8 @@ public class Grapple : MonoBehaviour
         if (Physics.Raycast(mainCamera.position, mainCamera.forward, out RaycastHit hit, grappleDistance, whatIsGrappable))
         {
             cursor.color = active;
-            if (Input.GetMouseButtonDown(0) && !recalling)
+            AgentIO.input.CanGrapple = !recalling;
+            if ((Input.GetMouseButtonDown(0) || (isAgent && AgentIO.output.Grapple == 1)) && !recalling)
             {
                 grapplePoint.position = hit.point;
                 grapplePoint.parent = hit.collider.transform;
@@ -59,9 +61,10 @@ public class Grapple : MonoBehaviour
         else
         {
             cursor.color = inactive;
+            AgentIO.input.CanGrapple = false;
         }
 
-        if (Input.GetMouseButtonUp(0) || StageDirector.instance.levelChanged)
+        if (Input.GetMouseButtonUp(0) || (isAgent && AgentIO.output.Grapple == 2) || StageDirector.instance.levelChanged)
         {
             StageDirector.instance.levelChanged = false;
             try { StopCoroutine(throwRoutine); } catch { }
