@@ -114,7 +114,7 @@ public class PlayerMovementManager : MonoBehaviour
         handsAnimator.SetBool("Grounded", isGrounded);
         handsAnimator.SetFloat("Speed", speed);
         speedParticle.startSpeed = speed * 5;
-        AudioManager.filter.cutoffFrequency = levelManager.isPaused ? 1500 : speed * 4000;
+        //AudioManager.filter.cutoffFrequency = levelManager.isPaused ? 1500 : speed * 4000;
 
         AgentIO.input.AgentPosition = playerBody.transform.position;
         AgentIO.input.CanJump = hasDoubleJump || isGrounded;

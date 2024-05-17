@@ -11,11 +11,11 @@ public class StageDirector : MonoBehaviour
         instance = this;
     }
 
-    //private void Update()
-    //{
-    //    if (PlayerMovementManager.instance.playerBody.position.y < -200)
-    //        ChangeLevel();
-    //}
+    private void Update()
+    {
+        if (PlayerMovementManager.instance.playerBody.position.y < -200)
+            ChangeLevel();
+    }
 
     public void ChangeLevel()
     {

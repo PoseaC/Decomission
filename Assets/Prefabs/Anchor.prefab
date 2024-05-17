@@ -503,9 +503,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d387606e542eda943adf0c3293123cd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  interpolationFunction: 3
+  holdBeat: 0
+  animatedValueStart: 0
+  animatedValueEnd: 0
+  animatedValue: 0
   outlineMaterial: {fileID: 2100000, guid: 5e702a8bf7ce07d4abbe34fed0b16f3b, type: 2}
   thickness: 0.025
-  beatThreshold: 0.2
-  timeBetweenBeats: 0.1
-  timeToBeat: 0.05
-  beatSpeed: 15

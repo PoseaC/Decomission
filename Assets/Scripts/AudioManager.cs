@@ -6,8 +6,11 @@ using System.Collections.Generic;
 //using one audio manager that stores all the sounds and can be called to play one at any point makes it easier to add and play new sounds rather than setting up manually an audio clip on each object
 public class AudioManager : MonoBehaviour
 {
-    public Sounds[] sounds; //an array of sounds to play
-    public Sounds[] music; //an array of music to play
+    public float beatSensitivity = 1.3f;
+    public int songSampleRate = 44100;
+
+    public Sound[] sounds; //an array of sounds to play
+    public Sound[] music; //an array of music to play
     public bool onShuffle = false;
     public bool playerPlaylist = false;
     public Animator uiAnimator;
@@ -20,9 +23,8 @@ public class AudioManager : MonoBehaviour
 
     int songIndex = 0;
     LevelManager levelManager;
-    float[] spectrumData = new float[128];
-    float lastSample;
     List<BeatListener> listeners;
+    Sound currentSong;
 
     private void Awake()
     {
@@ -42,9 +44,12 @@ public class AudioManager : MonoBehaviour
         source = GetComponent<AudioSource>();
         filter = GetComponent<AudioLowPassFilter>();
         DontDestroyOnLoad(gameObject); //tell the inspector to keep this object between scenes
+
+        ComputeSongsEnergy();
         ChangeMusicVolume();
         ChangeSFXVolume();
         StartCoroutine(PlayMusic());
+        
         onShuffle = PlayerPrefs.GetInt("OnShuffle", 0) == 1;
         listeners = new List<BeatListener>();
     }
@@ -62,15 +67,53 @@ public class AudioManager : MonoBehaviour
         NotifyListeners();
     }
 
+    private void ComputeSongsEnergy()
+    {
+        foreach(Sound song in music)
+        {
+            song.energySampleCount = song.clip.samples / songSampleRate;
+            song.energySamplesPerSecond = new float[song.energySampleCount];
+            int buffer = songSampleRate * song.clip.channels;
+
+            float[] samples = new float[song.clip.samples * song.clip.channels];
+            song.clip.GetData(samples, 0);
+
+            for (int i = 0; i < song.energySampleCount; i++)
+            {
+                float energyAvg = 0;
+
+                for (int j = 0; j < buffer; j++)
+                {
+                    energyAvg += Mathf.Pow(samples[i * buffer + j], 2);
+                }
+
+                song.energySamplesPerSecond[i] = energyAvg / buffer;
+            }
+        }
+    }
+
+    private bool IsBeat()
+    {
+        float instantEnergy = 0;
+        float[] samples = new float[1024 * source.clip.channels];
+        source.GetSpectrumData(samples, 0, FFTWindow.Hamming);
+
+        for(int i = 0; i < samples.Length; i++)
+        {
+            instantEnergy += samples[i];
+        }
+        
+        return instantEnergy > currentSong.energySamplesPerSecond[(int)source.time] * beatSensitivity;
+    }
+
     private void NotifyListeners()
     {
-        source.GetSpectrumData(spectrumData, 0, FFTWindow.Hamming);
-        float beatIntensity = Mathf.Abs(spectrumData[0] - lastSample) / source.volume;
-        lastSample = spectrumData[0];
-
-        foreach(BeatListener listener in listeners)
+        if (IsBeat())
         {
-            listener.HandleBeat(beatIntensity);
+            foreach(BeatListener listener in listeners)
+            {
+                listener.HandleBeat();
+            }
         }
     }
 
@@ -81,7 +124,7 @@ public class AudioManager : MonoBehaviour
 
     public void ChangeMusicVolume()
     {
-        foreach (Sounds sound in music)
+        foreach (Sound sound in music)
         {
             sound.volume = PlayerPrefs.GetFloat("MusicVolume", .6f);
         }
@@ -90,7 +133,7 @@ public class AudioManager : MonoBehaviour
 
     public void ChangeSFXVolume()
     {
-        foreach (Sounds sound in sounds)
+        foreach (Sound sound in sounds)
         {
             sound.volume = PlayerPrefs.GetFloat("SfxVolume", .3f);
         }
@@ -98,7 +141,7 @@ public class AudioManager : MonoBehaviour
 
     public void PlaySound(string name, AudioSource source)
     {
-        Sounds sound = Array.Find(sounds, sounds => sounds.soundName == name); //search the list of sounds for the one we need
+        Sound sound = Array.Find(sounds, sounds => sounds.soundName == name); //search the list of sounds for the one we need
 
         if (sound == null)
         {
@@ -113,11 +156,12 @@ public class AudioManager : MonoBehaviour
         source.Play();
     }
 
-    public void PlaySong(Sounds song)
+    public void PlaySong(Sound song)
     {
         if (musicTitle == null)
             musicTitle = levelManager.musicTitle;
 
+        beatSensitivity = song.beatSensitivity;
         musicTitle.text = TransitionInfo.instance.songTitle = song.soundName;
         source.clip = song.clip;
         source.volume = song.volume;
@@ -128,17 +172,17 @@ public class AudioManager : MonoBehaviour
 
     IEnumerator PlayMusic()
     {
-        Sounds song = onShuffle ? music[UnityEngine.Random.Range(0, music.Length)] : music[songIndex];
+        currentSong = onShuffle ? music[UnityEngine.Random.Range(0, music.Length)] : music[songIndex];
 
         songIndex += 1;
         if (songIndex >= music.Length)
             songIndex = 0;
 
-        PlaySong(song);
+        PlaySong(currentSong);
 
         //wait for the current song to end before playing the next one while still listening for input if the player wishes to skip it
         float timer = 0;
-        while (timer < song.clip.length)
+        while (timer < currentSong.clip.length)
         {
             timer += Time.deltaTime;
 

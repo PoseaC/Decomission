@@ -3,26 +3,29 @@ using System.Collections;
 
 public abstract class BeatListener : MonoBehaviour
 {
-    public float beatThreshold = .25f;
-    public float timeBetweenBeats = .1f;
-    public float beatSpeed = 3;
+    public enum InterpolationFunction
+    {
+        Linear, EaseIn, EaseOut, EaseInOut
+    }
+    public InterpolationFunction interpolationFunction = InterpolationFunction.EaseInOut;
     public bool holdBeat = false;
     [HideInInspector] public float animatedValueStart = 0;
     [HideInInspector] public float animatedValueEnd = 0;
     [HideInInspector] public float animatedValue = 0;
-    float cooldownTimer = 0;
     bool coroutineRunning = false;
-    bool returnBeat = false;
+    bool returnBeat = true;
 
-    public void HandleBeat(float intensity)
+    public void HandleBeat()
     {
-        cooldownTimer += Time.deltaTime;
-        if (intensity >= beatThreshold && cooldownTimer >= timeBetweenBeats)
+        if (!coroutineRunning && gameObject.activeInHierarchy)
         {
-            if (!coroutineRunning && gameObject.activeInHierarchy)
+            if (holdBeat)
             {
-                returnBeat = !returnBeat;
                 StartCoroutine(Beat(returnBeat));
+            }
+            else
+            {
+                StartCoroutine(Beat(true));
             }
         }
     }
@@ -30,7 +33,6 @@ public abstract class BeatListener : MonoBehaviour
     IEnumerator Beat(bool rising)
     {
         coroutineRunning = true;
-        cooldownTimer = 0;
 
         float start = rising ? animatedValueStart : animatedValueEnd;
         float target = rising ? animatedValueEnd : animatedValueStart;
@@ -38,25 +40,47 @@ public abstract class BeatListener : MonoBehaviour
 
         while (timer < 1)
         {
-            animatedValue = EaseOutInterpolation(start, target, timer);
-            timer += beatSpeed * Time.deltaTime;
+            timer += AudioManager.instance.beatSensitivity * Time.deltaTime;
+            animatedValue = Interpolate(start, target, timer);
             yield return null;
         }
 
-        if (rising && !holdBeat)
+        if (holdBeat)
         {
             returnBeat = !returnBeat;
-            if (gameObject.activeInHierarchy)
-                StartCoroutine(Beat(returnBeat));
-            else
-                coroutineRunning = false;
+            coroutineRunning = false;
         }
         else
-            coroutineRunning = false;
+        {
+            if (rising)
+            {
+                StartCoroutine(Beat(false));
+            }
+            else
+            {
+                coroutineRunning = false;
+            }
+        }
     }
 
-    float EaseOutInterpolation(float start, float target, float t)
+    float Interpolate(float start, float target, float t)
     {
-        return start + (target - start) * (1 - Mathf.Pow(1 - t, 5));
+        switch (interpolationFunction)
+        {
+            case InterpolationFunction.Linear:
+                return Mathf.Lerp(start, target, t);
+
+            case InterpolationFunction.EaseOut:
+                return start + (target - start) * (1 - Mathf.Pow(2, -10 * t));
+
+            case InterpolationFunction.EaseIn:
+                return start + (target - start) * (Mathf.Pow(2, 10 * t - 10));
+
+            case InterpolationFunction.EaseInOut:
+                return start + (target - start) * (t < 0.5 ? Mathf.Pow(2, 20 * t - 10) / 2
+                                                    : (2 - Mathf.Pow(2, -20 * t + 10)) / 2);
+            default:
+                return Mathf.Lerp(start, target, t);
+        }
     }
 }

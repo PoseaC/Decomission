@@ -5567,6 +5567,7 @@ MonoBehaviour:
   player: {fileID: 7309876405228390820}
   head: {fileID: 7309876405094195406}
   overlay: {fileID: 7309876404286352892}
+  isAgent: 1
   sensitivity: 100
   maxAngle: 90
   yRotation: 0
@@ -5628,6 +5629,8 @@ MonoBehaviour:
   physicsMovement: {fileID: 7309876405228390810}
   speedParticle: {fileID: 7309876403628060932}
   coyoteTime: 0.2
+  playerCamera: {fileID: 7309876404825966133}
+  isAgent: 1
   groundCheck: {fileID: 7309876403929882618}
   whatIsGround:
     serializedVersion: 2
@@ -5932,6 +5935,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   grappleDistance: 100
+  isAgent: 1
   mainCamera: {fileID: 7309876404825966131}
   grappleHand: {fileID: 7132396281649789697}
   grapplePoint: {fileID: 7309876404308615974}
