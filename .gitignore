@@ -59,4 +59,7 @@ sysinfo.txt
 crashlytics-build.properties
 
 /python_env
-
+/venv
+/python_env
+/python-venv-2
+/results

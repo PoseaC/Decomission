@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class AgentIO : MonoBehaviour
 {
@@ -28,7 +27,6 @@ public class AgentIO : MonoBehaviour
         private bool grounded;
         private bool canJump;
         private bool canGrapple;
-        private Dictionary<Vector3, float> platformPositionsDistances;
 
         public Quaternion CameraRotation { get => cameraRotation; set => cameraRotation = value; }
         public Vector3 AgentPosition { get => agentPosition; set => agentPosition = value; }
@@ -38,7 +36,6 @@ public class AgentIO : MonoBehaviour
         public bool Grounded { get => grounded; set => grounded = value; }
         public bool CanJump { get => canJump; set => canJump = value; }
         public bool CanGrapple { get => canGrapple; set => canGrapple = value; }
-        public Dictionary<Vector3, float> PlatformPositionsDistances { get => platformPositionsDistances; set => platformPositionsDistances = value; }
     }
 
     public static Input input = new Input();
